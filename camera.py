@@ -6,6 +6,10 @@ class VideoCamera(object):
         # from a webcam, comment the line below out and use a video file
         # instead.
         self.video = cv2.VideoCapture(0)
+
+        #self.video.set(CV_CAP_PROP_FRAME_WIDTH, 500);
+        #self.video.set(CV_CAP_PROP_FRAME_HEIGHT, 600);
+
         # If you decide to use video.mp4, you must have this file in the folder
         # as the main.py.
         # self.video = cv2.VideoCapture('video.mp4')
@@ -14,9 +18,24 @@ class VideoCamera(object):
         self.video.release()
     
     def get_frame(self):
-        success, image = self.video.read()
-        # We are using Motion JPEG, but OpenCV defaults to capture raw images,
-        # so we must encode it into JPEG in order to correctly display the
-        # video stream.
-        ret, jpeg = cv2.imencode('.jpg', image)
-        return jpeg.tobytes()
+        if self.video.isOpened():
+            success, image = self.video.read()
+
+            # Add operations on the frame here:
+
+            # Face tracking
+
+            # Connect to Rekognition or our own.
+
+            # We are using Motion JPEG, but OpenCV defaults to capture raw images,
+            # so we must encode it into JPEG in order to correctly display the
+            # video stream.
+            if success:
+                ret, jpeg = cv2.imencode('.jpg', image)
+                return jpeg.tobytes()
+            else:
+                print("No frame detected.")
+                return ''
+        else:
+            print("Video stream not open")
+            return ''
