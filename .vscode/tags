@@ -1,0 +1,28 @@
+!_TAG_FILE_FORMAT	2	/extended format; --format=1 will not append ;" to lines/
+!_TAG_FILE_SORTED	1	/0=unsorted, 1=sorted, 2=foldcase/
+!_TAG_PROGRAM_AUTHOR	Darren Hiebert	/dhiebert@users.sourceforge.net/
+!_TAG_PROGRAM_NAME	Exuberant Ctags	//
+!_TAG_PROGRAM_URL	http://ctags.sourceforge.net	/official site/
+!_TAG_PROGRAM_VERSION	5.8	//
+CLIENT_ID	../main.py	/^CLIENT_ID = "6761c48074347fb52a23"$/;"	kind:variable	line:23
+CLIENT_SECRET	../main.py	/^CLIENT_SECRET = "bb9b033f40b9ff33cf217cf1741923cfd4905115"$/;"	kind:variable	line:24
+Flask	../main.py	/^from flask import Flask, render_template, Response, redirect, request, session$/;"	kind:namespace	line:16
+OAuth	../main.py	/^from flask_oauth import OAuth$/;"	kind:namespace	line:18
+Response	../main.py	/^from flask import Flask, render_template, Response, redirect, request, session$/;"	kind:namespace	line:16
+VideoCamera	../camera.py	/^class VideoCamera(object):$/;"	kind:class	line:3
+VideoCamera	../main.py	/^from camera import VideoCamera$/;"	kind:namespace	line:17
+__del__	../camera.py	/^    def __del__(self):$/;"	kind:member	line:17
+__init__	../camera.py	/^    def __init__(self):$/;"	kind:member	line:4
+app	../main.py	/^app = Flask(__name__)$/;"	kind:variable	line:20
+callback	../main.py	/^def callback():$/;"	kind:function	line:43
+camera.py	../camera.py	1;"	kind:file	line:1
+cv2	../camera.py	/^import cv2$/;"	kind:namespace	line:1
+gen	../main.py	/^def gen(camera):$/;"	kind:function	line:63
+get_frame	../camera.py	/^    def get_frame(self):$/;"	kind:member	line:20
+index	../main.py	/^def index():$/;"	kind:function	line:27
+main.py	../main.py	1;"	kind:file	line:1
+redirect	../main.py	/^from flask import Flask, render_template, Response, redirect, request, session$/;"	kind:namespace	line:16
+render_template	../main.py	/^from flask import Flask, render_template, Response, redirect, request, session$/;"	kind:namespace	line:16
+request	../main.py	/^from flask import Flask, render_template, Response, redirect, request, session$/;"	kind:namespace	line:16
+session	../main.py	/^from flask import Flask, render_template, Response, redirect, request, session$/;"	kind:namespace	line:16
+video_feed	../main.py	/^def video_feed():$/;"	kind:function	line:70
