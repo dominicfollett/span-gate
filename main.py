@@ -14,8 +14,25 @@
 # 2. Run "python main.py".
 # 3. Navigate the browser to the local webpage.
 from flask import Flask, render_template, Response, redirect, request, session, url_for, jsonify
-from camera import VideoCamera
 from flask_oauthlib.client import OAuth
+
+#from camera import VideoCamera
+from imutils.video import VideoStream
+import datetime
+import argparse
+import imutils
+import time
+import cv2
+
+# construct the argument parse and parse the arguments
+ap = argparse.ArgumentParser()
+ap.add_argument("-p", "--picamera", type=int, default=-1,
+	help="whether or not the Raspberry Pi camera should be used")
+args = vars(ap.parse_args())
+ 
+# initialize the video stream and allow the cammera sensor to warmup
+vs = VideoStream(usePiCamera=args["picamera"] > 0).start()
+time.sleep(2.0)
 
 app = Flask(__name__)
 app.debug = True
@@ -67,15 +84,32 @@ def authorized():
 def get_github_oauth_token():
     return session.get('github_token')
 
-def gen(camera):
+def gen(vs):
+    # loop over the frames from the video stream
     while True:
-        frame = camera.get_frame()
+        # grab the frame from the threaded video stream and resize it
+        # to have a maximum width of 400 pixels
+        frame = vs.read()
+        frame = imutils.resize(frame, width=400)
+
+        # draw the timestamp on the frame
+        timestamp = datetime.datetime.now()
+        ts = timestamp.strftime("%A %d %B %Y %I:%M:%S%p")
+        cv2.putText(frame, ts, (10, frame.shape[0] - 10), cv2.FONT_HERSHEY_SIMPLEX,
+            0.35, (0, 0, 255), 1)
+
+        ret, jpeg = cv2.imencode('.jpg', frame)
+        byteArr = jpeg.tobytes()
         yield (b'--frame\r\n'
-               b'Content-Type: image/jpeg\r\n\r\n' + frame + b'\r\n\r\n')
+               b'Content-Type: image/jpeg\r\n\r\n' + byteArr + b'\r\n\r\n')
+#    while True:
+#        frame = camera.get_frame()
+#        yield (b'--frame\r\n'
+#               b'Content-Type: image/jpeg\r\n\r\n' + frame + b'\r\n\r\n')
 
 @app.route('/video_feed')
 def video_feed():
-    return Response(gen(VideoCamera()),
+    return Response(gen(vs),
                     mimetype='multipart/x-mixed-replace; boundary=frame')
 
 if __name__ == '__main__':
