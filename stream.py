@@ -11,7 +11,7 @@ class VideoStream:
 			# requirement of `picamera[array]` from desktops or
 			# laptops that still want to use the `imutils` package
 			from pivideostream import PiVideoStream
-
+                        print("Initializing the camera.")
 			# initialize the picamera stream and allow the camera
 			# sensor to warmup
 			self.stream = PiVideoStream(resolution=resolution,
