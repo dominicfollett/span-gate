@@ -1,49 +1,51 @@
-FROM python:3.6
-MAINTAINER Josip Janzic <josip.janzic@gmail.com>
+FROM resin/raspberrypi3-buildpack-deps:stretch
+MAINTAINER Nate Johnson <nate@biobright.org>
 
-RUN apt-get update && \
-        apt-get install -y \
-        build-essential \
-        cmake \
-        git \
-        wget \
-        unzip \
-        yasm \
-        pkg-config \
-        libswscale-dev \
-        libtbb2 \
-        libtbb-dev \
-        libjpeg-dev \
-        libpng-dev \
-        libtiff-dev \
-        libjasper-dev \
-        libavformat-dev \
-        libpq-dev
+# GStreamer  and openCV deps
+# Several retries is a workaround for flaky downloads
+RUN packages="curl python python-dev unzip supervisor libzmq3 libzmq3-dev v4l-utils python3-dev python3-numpy python-numpy libgstreamer1.0-dev libgstreamer1.0-0 libgstreamer-vaapi1.0-dev libgstreamer-vaapi1.0-0 libgstreamer-plugins-base1.0-dev libgstreamer-plugins-bad1.0-dev libgstreamer-plugins-bad1.0-0 libgstreamer-plugins-base1.0-0 gstreamer1.0-tools gstreamer1.0-plugins-base gstreamer1.0-plugins-good gstreamer1.0-plugins-bad gstreamer1.0-plugins-ugly gstreamer1.0-omx build-essential cmake libeigen3-dev libjpeg-dev libtiff5-dev libtiff5 libjasper-dev libjasper1 libpng12-dev libpng12-0 libavcodec-dev  libavcodec56 libavformat-dev libavformat56 libswscale-dev libswscale3 libv4l-dev libv4l-0 libatlas-base-dev libatlas3-base gfortran libblas-dev libblas3 liblapack-dev liblapack3 python3-dev libpython3-dev" \
+    && apt-get -y update \
+    && apt-get -y install $packages \
+    || apt-get -y install $packages \
+    || apt-get -y install $packages \
+    || apt-get -y install $packages \
+    || apt-get -y install $packages
 
-RUN pip install numpy
-
-WORKDIR /
-RUN wget https://github.com/opencv/opencv/archive/3.3.1.zip \
-&& unzip 3.3.1.zip \
-&& mkdir /opencv-3.3.1/cmake_binary \
-&& cd /opencv-3.3.1/cmake_binary \
-&& cmake -DBUILD_TIFF=ON \
-  -DBUILD_opencv_java=OFF \
-  -DWITH_CUDA=OFF \
-  -DENABLE_AVX=ON \
-  -DWITH_OPENGL=ON \
-  -DWITH_OPENCL=ON \
-  -DWITH_IPP=ON \
-  -DWITH_TBB=ON \
-  -DWITH_EIGEN=ON \
-  -DWITH_V4L=ON \
-  -DBUILD_TESTS=OFF \
-  -DBUILD_PERF_TESTS=OFF \
-  -DCMAKE_BUILD_TYPE=RELEASE \
-  -DCMAKE_INSTALL_PREFIX=$(python3.6 -c "import sys; print(sys.prefix)") \
-  -DPYTHON_EXECUTABLE=$(which python3.6) \
-  -DPYTHON_INCLUDE_DIR=$(python3.6 -c "from distutils.sysconfig import get_python_inc; print(get_python_inc())") \
-  -DPYTHON_PACKAGES_PATH=$(python3.6 -c "from distutils.sysconfig import get_python_lib; print(get_python_lib())") .. \
-&& make install \
-&& rm /3.3.1.zip \
-&& rm -r /opencv-3.3.1
+# We might consider installing pip, pip3, pip numpy here
+# if it provides any performance/bug fixes
+    
+# OpenCV installation
+# this says it can't find lots of stuff, but VideoCapture(0) and Python3 bindings work.
+# IDK if LAPACK/BLAS/etc works, or gstreamer backend
+# TODO: Where are the build logs?
+# PYTHON_DEFAULT_EXECUTABLE
+RUN cd /tmp \
+    && git clone git://github.com/opencv/opencv \
+    && git clone git://github.com/opencv/opencv_contrib \
+    && cd opencv \
+    && mkdir build \
+    && cd build \
+    && cmake -DCMAKE_BUILD_TYPE=RELEASE \
+    -DCMAKE_INSTALL_PREFIX=/usr/local \
+    -DINSTALL_C_EXAMPLES=OFF \
+    -DINSTALL_PYTHON_EXAMPLES=OFF \
+    -DOPENCV_EXTRA_MODULES_PATH=../../opencv_contrib/modules \
+    -DBUILD_EXAMPLES=OFF \
+    -DENABLE_VFPV3=ON \
+    -DENABLE_NEON=ON \
+    -DHARDFP=ON \
+    -DWITH_CAROTENE=OFF \
+    -DBUILD_NEW_PYTHON_SUPPORT=ON \
+    -DWITH_FFMPEG=OFF \
+    -DWITH_GSTREAMER=ON \
+    -DWITH_CUDA=OFF \
+    -DWITH_CUFFT=OFF \
+    -DWITH_CUBLAS=OFF \
+    -DWITH_LAPACK=ON \
+    .. \
+    && make -j`nproc` \
+    && make install \
+    && make package \
+    && make clean \
+    && cd / \
+    && rm -rf /tmp/*opencv*
