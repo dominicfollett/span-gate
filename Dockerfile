@@ -1,4 +1,4 @@
-FROM resin/raspberrypi3-buildpack-deps:stretch
+FROM resin/raspberrypi3-buildpack-deps:jessie
 MAINTAINER Nate Johnson <nate@biobright.org>
 
 # GStreamer  and openCV deps
