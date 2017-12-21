@@ -114,4 +114,4 @@ def video_feed():
 
 if __name__ == '__main__':
     # picamera will not work with debugging enabled.
-    app.run(host='0.0.0.0', debug=False, threaded=True)
+    app.run(host='0.0.0.0', port=80, debug=False, threaded=True)
