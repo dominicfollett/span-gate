@@ -66,4 +66,4 @@ COPY . ./
 ENV INITSYSTEM on
 
 # main.py will run when container starts up on the device
-CMD ["python3","main.py"]
+CMD ["python3","main.py", "-p", "1"]
