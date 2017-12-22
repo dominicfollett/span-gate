@@ -13,7 +13,7 @@ RUN packages="python3-picamera curl python python-dev unzip supervisor libzmq3 l
 
 # We might consider installing pip, pip3, pip numpy here
 # if it provides any performance/bug fixes
-    
+
 # OpenCV installation
 # this says it can't find lots of stuff, but VideoCapture(0) and Python3 bindings work.
 # IDK if LAPACK/BLAS/etc works, or gstreamer backend
@@ -57,7 +57,7 @@ WORKDIR /usr/src/app
 COPY ./requirements.txt /requirements.txt
 
 # pip install python deps from requirements.txt on the resin.io build server
-RUN pip3 install -r /requirements.txt
+RUN pip3 install -r /requirements.txt --upgrade
 
 # This will copy all files in our root to the working  directory in the container
 COPY . ./
