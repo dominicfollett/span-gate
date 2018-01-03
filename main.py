@@ -34,12 +34,21 @@ if CLIENT_ID is None or CLIENT_SECRET is None:
 
 # construct the argument parse and parse the arguments
 ap = argparse.ArgumentParser()
-ap.add_argument("-pi", "--picamera", type=int, default=-1,
+ap.add_argument("-pi", "--picamera", type=bool, default=False,
 	help="whether or not the Raspberry Pi camera should be used")
 ap.add_argument("-p", "--port", type=int, default=80,
 	help="port to serve service over")
+ap.add_argument("-d", "--debug", type=bool, default=False,
+	help="Run service in debug mode.")
 args = vars(ap.parse_args())
- 
+
+if args["debug"] and args["picamera"]:
+    print("Picamera will not work with debugging enabled.")
+    exit(0)
+
+# Load classifiers
+face_cascade = cv2.CascadeClassifier('./lib/haarcascade_frontalface_default.xml')
+
 # initialize the video stream and allow the cammera sensor to warmup
 vs = VideoStream(usePiCamera=args["picamera"] > 0).start()
 time.sleep(2.0)
@@ -100,7 +109,14 @@ def gen(vs):
         # grab the frame from the threaded video stream and resize it
         # to have a maximum width of 400 pixels
         frame = vs.read()
-        frame = imutils.resize(frame, width=400)
+        frame = imutils.resize(frame, width=500)
+
+        gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+        faces = face_cascade.detectMultiScale(gray, 1.3, 5)
+
+        for (x,y,w,h) in faces:
+            cv2.rectangle(frame,(x,y),(x+w,y+h),(255,0,0),2)
+            # Send frame off for recognition.
 
         # draw the timestamp on the frame
         timestamp = datetime.datetime.now()
@@ -112,10 +128,6 @@ def gen(vs):
         byteArr = jpeg.tobytes()
         yield (b'--frame\r\n'
                b'Content-Type: image/jpeg\r\n\r\n' + byteArr + b'\r\n\r\n')
-#    while True:
-#        frame = camera.get_frame()
-#        yield (b'--frame\r\n'
-#               b'Content-Type: image/jpeg\r\n\r\n' + frame + b'\r\n\r\n')
 
 @app.route('/video_feed')
 def video_feed():
@@ -123,5 +135,4 @@ def video_feed():
                     mimetype='multipart/x-mixed-replace; boundary=frame')
 
 if __name__ == '__main__':
-    # picamera will not work with debugging enabled.
-    app.run(host='0.0.0.0', port=args["port"], debug=False, threaded=True)
+    app.run(host='0.0.0.0', port=args["port"], debug=args["debug"], threaded=True)
