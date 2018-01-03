@@ -23,11 +23,21 @@ import argparse
 import imutils
 import time
 import cv2
+import os
+
+CLIENT_ID = os.environ.get('CLIENT_ID')
+CLIENT_SECRET = os.environ.get('CLIENT_SECRET')
+
+if CLIENT_ID is None or CLIENT_SECRET is None:
+    print("Exiting: Oauth client ID and secret is not set in the environment...")
+    exit(0)
 
 # construct the argument parse and parse the arguments
 ap = argparse.ArgumentParser()
-ap.add_argument("-p", "--picamera", type=int, default=-1,
+ap.add_argument("-pi", "--picamera", type=int, default=-1,
 	help="whether or not the Raspberry Pi camera should be used")
+ap.add_argument("-p", "--port", type=int, default=80,
+	help="port to serve service over")
 args = vars(ap.parse_args())
  
 # initialize the video stream and allow the cammera sensor to warmup
@@ -41,8 +51,8 @@ oauth = OAuth(app)
 
 github = oauth.remote_app(
     'github',
-    consumer_key='6761c48074347fb52a23',
-    consumer_secret='bb9b033f40b9ff33cf217cf1741923cfd4905115',
+    consumer_key=CLIENT_ID,
+    consumer_secret=CLIENT_SECRET,
     request_token_params={'scope': 'user:email'},
     base_url='https://api.github.com/',
     request_token_url=None,
@@ -114,4 +124,4 @@ def video_feed():
 
 if __name__ == '__main__':
     # picamera will not work with debugging enabled.
-    app.run(host='0.0.0.0', port=80, debug=False, threaded=True)
+    app.run(host='0.0.0.0', port=args["port"], debug=False, threaded=True)
