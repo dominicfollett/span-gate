@@ -3,3 +3,4 @@ numpy
 #opencv-python
 Flask-OAuthlib
 imutils
+face_recognition
