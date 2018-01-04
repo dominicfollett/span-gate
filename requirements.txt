@@ -2,5 +2,5 @@ flask
 numpy
 #opencv-python
 Flask-OAuthlib
-imutils
+imutils>=0.4.5
 face_recognition
