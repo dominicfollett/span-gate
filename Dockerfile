@@ -24,7 +24,7 @@ RUN cd /tmp \
     && cmake --build . \
     && cd .. \
     && python3 setup.py install --yes USE_AVX_INSTRUCTIONS --no DLIB_USE_CUDA --no DLIB_USE_MKL_FFT --no DLIB_USE_MKL_FFT_STR --no DLIB_USE_BLAS --no DLIB_USE_LAPACK \
-    && cd /
+    && cd / \
     && rm -rf /tmp/*dlib*
 
 # We might consider installing pip, pip3, pip numpy here
