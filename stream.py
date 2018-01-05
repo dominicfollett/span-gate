@@ -13,7 +13,7 @@ class VideoStream:
 			from pivideostream import PiVideoStream
             print("Initializing the camera.")
 			# initialize the picamera stream and allow the camera sensor to warmup. 
-			self.stream = PiVideoStream((640, 480), 30)
+			self.stream = PiVideoStream(resolution=(640, 480), framerate=50)
 
 		# otherwise, we are using OpenCV so initialize the webcam
 		# stream
