@@ -66,7 +66,7 @@ RUN cd /tmp \
     && rm -rf /tmp/*opencv*
 
 # Enable the camerafor opencv
-RUN modprobe bcm2835-v4l2
+CMD modprobe bcm2835-v4l2
 
 # Set our working directory
 WORKDIR /usr/src/app
