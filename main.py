@@ -59,7 +59,12 @@ if args["debug"] and args["picamera"]:
 face_cascade = cv2.CascadeClassifier('./lib/haarcascade_frontalface_default.xml')
 
 # initialize the video stream and allow the cammera sensor to warmup
-vs = VideoStream(usePiCamera=args["picamera"] > 0).start()
+#vs = VideoStream(usePiCamera=args["picamera"] > 0)#.start()
+vs = cv2.VideoCapture(0)
+vs.set(3, 1280)
+vs.set(4, 720)
+vs.set(cv2.CAP_PROP_FPS, 50)
+
 time.sleep(2.0)
 
 app = Flask(__name__)
@@ -118,7 +123,11 @@ def gen(vs):
     while True:
         # grab the frame from the threaded video stream and resize it
         # to have a maximum width of 400 pixels
-        frame = vs.read()
+        ok, frame = vs.read()
+        if not ok:
+            print("Error reading frame.")
+            vs.release()
+            exit(0)
         #frame = imutils.resize(frame, width=500)
         
         # Resize frame of video to 1/4 size for faster face recognition processing

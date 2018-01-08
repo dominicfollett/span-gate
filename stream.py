@@ -1,10 +1,12 @@
 # import the necessary packages
-from webcamvideostream import WebcamVideoStream
+#from webcamvideostream import WebcamVideoStream
+import cv2
 
 class VideoStream:
 	def __init__(self, src=0, usePiCamera=False, res=(640, 480),
 		fr=24):
 		# check to see if the picamera module should be used
+		"""
 		if usePiCamera:
 			# only import the picamera packages unless we are
 			# explicity told to do so -- this helps remove the
@@ -19,6 +21,10 @@ class VideoStream:
 		# stream
 		else:
 			self.stream = WebcamVideoStream(src=src)
+		"""
+		self.stream = cv2.VideoCapture(0)
+		self.stream.set(3, 320)
+		self.stream.set(4, 240)
 
 	def start(self):
 		# start the threaded video stream
@@ -30,8 +36,11 @@ class VideoStream:
 
 	def read(self):
 		# return the current frame
-		return self.stream.read()
+		ok, frame = self.stream.read()
+		if not ok:
+			print("Someting went wrong.")
+		return frame
 
 	def stop(self):
 		# stop the thread and release any resources
-		self.stream.stop()
+		self.stream.release()
