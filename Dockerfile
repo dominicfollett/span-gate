@@ -1,5 +1,4 @@
 FROM resin/raspberrypi3-buildpack-deps:jessie
-MAINTAINER Nate Johnson <nate@biobright.org>
 
 # GStreamer  and openCV deps
 # Several retries is a workaround for flaky downloads
@@ -65,6 +64,9 @@ RUN cd /tmp \
     && make clean \
     && cd / \
     && rm -rf /tmp/*opencv*
+
+# Enable the camerafor opencv
+RUN modprobe bcm2835-v4l2
 
 # Set our working directory
 WORKDIR /usr/src/app

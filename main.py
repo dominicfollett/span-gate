@@ -1,23 +1,8 @@
 #!/usr/bin/env python
-#
-# Project: Video Streaming with Flask
-# Author: Log0 <im [dot] ckieric [at] gmail [dot] com>
-# Date: 2014/12/21
-# Website: http://www.chioka.in/
-# Description:
-# Modified to support streaming out with webcams, and not just raw JPEGs.
-# Most of the code credits to Miguel Grinberg, except that I made a small tweak. Thanks!
-# Credits: http://blog.miguelgrinberg.com/post/video-streaming-with-flask
-#
-# Usage:
-# 1. Install Python dependencies: cv2, flask. (wish that pip install works like a charm)
-# 2. Run "python main.py".
-# 3. Navigate the browser to the local webpage.
+
 from flask import Flask, render_template, Response, redirect, request, session, url_for, jsonify
 from flask_oauthlib.client import OAuth
 
-#from camera import VideoCamera
-from imutils.video import VideoStream
 import datetime
 import argparse
 import imutils
@@ -59,10 +44,9 @@ if args["debug"] and args["picamera"]:
 face_cascade = cv2.CascadeClassifier('./lib/haarcascade_frontalface_default.xml')
 
 # initialize the video stream and allow the cammera sensor to warmup
-#vs = VideoStream(usePiCamera=args["picamera"] > 0)#.start()
 vs = cv2.VideoCapture(0)
-vs.set(3, 1280)
-vs.set(4, 720)
+vs.set(3, 640)
+vs.set(4, 480)
 vs.set(cv2.CAP_PROP_FPS, 50)
 
 time.sleep(2.0)
