@@ -65,9 +65,6 @@ RUN cd /tmp \
     && cd / \
     && rm -rf /tmp/*opencv*
 
-# Enable the camerafor opencv
-CMD modprobe bcm2835-v4l2
-
 # Set our working directory
 WORKDIR /usr/src/app
 
@@ -84,4 +81,4 @@ COPY . ./
 ENV INITSYSTEM on
 
 # main.py will run when container starts up on the device
-CMD ["python3","main.py", "-pi", "1"]
+CMD modprobe bcm2835-v4l2 && python3 main.py -pi 1
