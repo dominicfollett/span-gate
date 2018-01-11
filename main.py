@@ -1,23 +1,35 @@
 #!/usr/bin/env python
 
-import multiprocessing as multiprocessing
 from stream import Stream
-from server import Server
+from server import run
 
+import multiprocessing as mp
+import argparse
+
+# Construct the argument parser and parse the arguments.
+ap = argparse.ArgumentParser()
+ap.add_argument("-p", "--port", type=int, default=80,
+	help="port to serve service over")
+ap.add_argument("-d", "--debug", type=bool, default=False,
+	help="Run service in debug mode.")
+args = vars(ap.parse_args())
+
+if args["debug"] and args["picamera"]:
+    print("Picamera will not work with debugging enabled.")
+    exit(0)
 
 if __name__ == '__main__':
     # 'fork' by default.
-    mp.set_start_method('fork')
+    mp.set_start_method('spawn')
     
     # Frames are passed in the queue.
-    queue = mp.Queue()
+    queue = mp.Queue(100)
 
-    # How is the queue shared between processes?
     stream_process = mp.Process(target=Stream().run, args=(queue,))
-    server_process = mp.Process(target=Server().run, args=(queue,))
+    server_process = mp.Process(target=run, args=(queue, args['port']))
 
-    stream_process.start()
     server_process.start()
+    stream_process.start()
 
     stream_process.join()
     server_process.join()
