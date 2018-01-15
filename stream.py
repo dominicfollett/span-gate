@@ -62,15 +62,15 @@ class Stream:
                 # Draw an initial rectangle.
                 #cv2.rectangle(frame,(x,y),(x+w,y+h),(255,0,0),2)
 
-                if PROCESS_FRAME % 2 == 0:
-                    #start = time.clock()
+                if PROCESS_FRAME % 1 == 0:
+                    start = time.clock()
                     #frame = self.process_frame(frame, rgb_frame, face_locations)
                     predicted, conf = recognizer.predict(gray[y: y + h, x: x + w])
-                    print(predicted)
-                    name = names[predicted]
-                    #print(time.clock() - start)
+                    name = names[predicted] if conf <= 40.0 else "Unknown"
+                    print("{} is recognized with confidence {}".format(name, conf))
+                    print(time.clock() - start)
                     cv2.rectangle(frame, (x, y), (x+w, y+h), (0, 0, 255), 2)
-                    # Draw a label with a name below the face
+                    # Draw a label with a name below the face.
                     cv2.rectangle(frame, (x, y+h - 35), (x+w, y+h), (0, 0, 255), cv2.FILLED)
                     font = cv2.FONT_HERSHEY_DUPLEX
                     cv2.putText(frame, name, (x + 6, y+h - 6), font, 1.0, (255, 255, 255), 1)

@@ -19,8 +19,8 @@ args = vars(ap.parse_args())
 names = None
 try:
     names = yaml.load(open("./lib/names.yaml", 'r'))
-except yaml.YAMLError as exec:
-    print(exec)
+except yaml.YAMLError as e:
+    print(e)
     exit(0)
 
 if args["name"] is None:
@@ -41,8 +41,10 @@ time.sleep(2.0)
 recognizer = cv2.face.LBPHFaceRecognizer_create()
 
 # Load previous models.
-print(dir(recognizer))
-recognizer.read('./lib/models.yaml')
+try:
+    recognizer.read('./lib/models.yaml')
+except cv2.error as e:
+    print(e)
 
 def get_frame():
     ok, frame = video_stream.read()

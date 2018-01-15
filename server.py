@@ -58,8 +58,9 @@ def authorized():
             resp
         )
     # Check the username is allowed.
-    session['github_token'] = (resp['access_token'], '')
     user = github.get('user')
+    print(dir(user))
+    session['github_token'] = (resp['access_token'], '')
     return redirect(url_for('index'))
 
 @github.tokengetter
