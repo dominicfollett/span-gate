@@ -4,6 +4,7 @@ import cv2
 import face_recognition
 import datetime
 import time
+import yaml
 
 # TODO load all SPAN faces here.
 obama_image = face_recognition.load_image_file("./pics/obama.jpg")
@@ -25,13 +26,12 @@ video_stream = cv2.VideoCapture(0)
 # Initialize the video stream and allow the cammera sensor to warmup.
 video_stream.set(3, 640)
 video_stream.set(4, 480)
-video_stream.set(cv2.CAP_PROP_FPS, 90)
+video_stream.set(cv2.CAP_PROP_FPS, 50)
 
 # For face recognition we will the the LBPH Face Recognizer.
 recognizer = cv2.face.LBPHFaceRecognizer_create()
 
 # Load previous models.
-print(dir(recognizer))
 recognizer.read('./lib/models.yaml')
 
 class Stream:
@@ -63,11 +63,17 @@ class Stream:
                 #cv2.rectangle(frame,(x,y),(x+w,y+h),(255,0,0),2)
 
                 if PROCESS_FRAME % 2 == 0:
-                    start = time.clock()
+                    #start = time.clock()
                     #frame = self.process_frame(frame, rgb_frame, face_locations)
                     predicted, conf = recognizer.predict(gray[y: y + h, x: x + w])
-                    print(time.clock() - start)
-                    print("{} is recognized with confidence {}".format(nbr_predicted, conf))
+                    print(predicted)
+                    name = names[predicted]
+                    #print(time.clock() - start)
+                    cv2.rectangle(frame, (x, y), (x+w, y+h), (0, 0, 255), 2)
+                    # Draw a label with a name below the face
+                    cv2.rectangle(frame, (x, y+h - 35), (x+w, y+h), (0, 0, 255), cv2.FILLED)
+                    font = cv2.FONT_HERSHEY_DUPLEX
+                    cv2.putText(frame, name, (x + 6, y+h - 6), font, 1.0, (255, 255, 255), 1)
                 PROCESS_FRAME = PROCESS_FRAME % 90 + 1
 
             frame = self.jpeg_byte_array(self.affix_timestamp(frame))

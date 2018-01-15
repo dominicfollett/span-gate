@@ -4,3 +4,4 @@ numpy
 Flask-OAuthlib
 imutils>=0.4.5
 face_recognition
+pyyaml
