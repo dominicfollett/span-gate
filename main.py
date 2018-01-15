@@ -20,7 +20,7 @@ if args["debug"] and args["picamera"]:
 
 if __name__ == '__main__':
     # 'fork' by default.
-    mp.set_start_method('spawn')
+    mp.set_start_method('fork')
     
     # Frames are passed in the queue.
     queue = mp.Queue(100)
