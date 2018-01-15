@@ -16,9 +16,9 @@ dom_face_encoding = face_recognition.face_encodings(dom_image)[0]
 face_cascade = cv2.CascadeClassifier('./lib/haarcascade_frontalface_default.xml')
 video_stream = cv2.VideoCapture(0)
 # Initialize the video stream and allow the cammera sensor to warmup.
-video_stream.set(3, 1280)
-video_stream.set(4, 720)
-video_stream.set(cv2.CAP_PROP_FPS, 24)
+video_stream.set(3, 640)
+video_stream.set(4, 480)
+video_stream.set(cv2.CAP_PROP_FPS, 90)
 
 class Stream:
 
@@ -48,11 +48,11 @@ class Stream:
                 # Draw an initial rectangle.
                 #cv2.rectangle(frame,(x,y),(x+w,y+h),(255,0,0),2)
 
-                if PROCESS_FRAME % 3 == 0:
+                if PROCESS_FRAME % 9 == 0:
                     start = time.clock()
                     frame = self.process_frame(frame, rgb_frame, face_locations)
                     print(time.clock() - start)
-                PROCESS_FRAME = PROCESS_FRAME % 24 + 1
+                PROCESS_FRAME = PROCESS_FRAME % 90 + 1
 
             frame = self.jpeg_byte_array(self.affix_timestamp(frame))
             queue.put(frame)
