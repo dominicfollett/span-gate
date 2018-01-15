@@ -12,6 +12,13 @@ obama_face_encoding = face_recognition.face_encodings(obama_image)[0]
 dom_image = face_recognition.load_image_file("./pics/dom.jpg")
 dom_face_encoding = face_recognition.face_encodings(dom_image)[0]
 
+names = None
+try:
+    names = yaml.load(open("./lib/names.yaml", 'r'))
+except yaml.YAMLError as exec:
+    print(exec)
+    exit(0)
+
 # Load classifiers
 face_cascade = cv2.CascadeClassifier('./lib/haarcascade_frontalface_default.xml')
 video_stream = cv2.VideoCapture(0)
@@ -19,6 +26,13 @@ video_stream = cv2.VideoCapture(0)
 video_stream.set(3, 640)
 video_stream.set(4, 480)
 video_stream.set(cv2.CAP_PROP_FPS, 90)
+
+# For face recognition we will the the LBPH Face Recognizer.
+recognizer = cv2.face.LBPHFaceRecognizer_create()
+
+# Load previous models.
+print(dir(recognizer))
+recognizer.read('./lib/models.yaml')
 
 class Stream:
 
@@ -38,20 +52,22 @@ class Stream:
             face_locations = list()
             
             # Convert to RGB for face_recognition.
-            rgb_frame = frame[:, :, ::-1]
+            #rgb_frame = frame[:, :, ::-1]
 
             for (x,y,w,h) in faces:
                 # If a face is detected, try and determine who it is, but keep tracking the face.
                 # Don't do anymore facial encodings.
-                face_locations.append((y.item(), (x+w).item(), (y+h).item(), x.item()))
+                #face_locations.append((y.item(), (x+w).item(), (y+h).item(), x.item()))
 
                 # Draw an initial rectangle.
                 #cv2.rectangle(frame,(x,y),(x+w,y+h),(255,0,0),2)
 
-                if PROCESS_FRAME % 9 == 0:
+                if PROCESS_FRAME % 2 == 0:
                     start = time.clock()
-                    frame = self.process_frame(frame, rgb_frame, face_locations)
+                    #frame = self.process_frame(frame, rgb_frame, face_locations)
+                    predicted, conf = recognizer.predict(gray[y: y + h, x: x + w])
                     print(time.clock() - start)
+                    print("{} is recognized with confidence {}".format(nbr_predicted, conf))
                 PROCESS_FRAME = PROCESS_FRAME % 90 + 1
 
             frame = self.jpeg_byte_array(self.affix_timestamp(frame))
