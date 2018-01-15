@@ -17,12 +17,11 @@ ap.add_argument("-c", "--count", type=int, default=100,
 args = vars(ap.parse_args())
 
 names = None
-with open("./lib/names.yaml", 'r') as stream:
-    try:
-        names = yaml.safe_load(stream)
-    except yaml.YAMLError as exec:
-        print(exec)
-        exit(0)
+try:
+    names = yaml.load(open("./lib/names.yaml", 'r'))
+except yaml.YAMLError as exec:
+    print(exec)
+    exit(0)
 
 if args["name"] is None:
     print("No name supplied.")
@@ -42,7 +41,8 @@ time.sleep(2.0)
 recognizer = cv2.face.LBPHFaceRecognizer_create()
 
 # Load previous models.
-recognizer.load('./lib/models')
+print(dir(recognizer))
+recognizer.read('./lib/models.yaml')
 
 def get_frame():
     ok, frame = video_stream.read()
@@ -86,4 +86,4 @@ images, labels = get_exemplars(args["name"], args["count"])
 recognizer.train(images, np.array(labels))
 
 # Save the models.
-recognizer.write('./lib/models')
+recognizer.write('./lib/models.yaml')
