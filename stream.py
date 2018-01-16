@@ -62,7 +62,7 @@ class Stream:
                 # Draw an initial rectangle.
                 #cv2.rectangle(frame,(x,y),(x+w,y+h),(255,0,0),2)
 
-                if PROCESS_FRAME % 1 == 0:
+                if PROCESS_FRAME % 2 == 0:
                     start = time.clock()
                     #frame = self.process_frame(frame, rgb_frame, face_locations)
                     predicted, conf = recognizer.predict(gray[y: y + h, x: x + w])

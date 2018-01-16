@@ -74,6 +74,7 @@ def get_exemplars(name, exemplar_count):
         if len(faces) == 1:
             for (x, y, w, h) in faces:
                 images.append(gray[y: y + h, x: x + w])
+                print(label)
                 labels.append(label)
                 cv2.imshow("Adding faces to traning set...", gray[y: y + h, x: x + w])
                 exemplar += 1
@@ -86,6 +87,9 @@ images, labels = get_exemplars(args["name"], args["count"])
 
 # Perform the tranining
 recognizer.train(images, np.array(labels))
+
+# Save the training data.
+recognizer.save()
 
 # Save the models.
 recognizer.write('./lib/models.yaml')
