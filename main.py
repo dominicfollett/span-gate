@@ -12,6 +12,8 @@ ap.add_argument("-p", "--port", type=int, default=80,
 	help="port to serve service over")
 ap.add_argument("-d", "--debug", type=bool, default=False,
 	help="Run service in debug mode.")
+ap.add_argument("-pi", "--picamera", type=bool, default=False,
+help="Run service in debug mode.")
 args = vars(ap.parse_args())
 
 if args["debug"] and args["picamera"]:
@@ -19,9 +21,12 @@ if args["debug"] and args["picamera"]:
     exit(0)
 
 if __name__ == '__main__':
-    # 'fork' by default.
-    mp.set_start_method('fork')
-    
+
+    if args["picamera"]:
+        mp.set_start_method('fork')
+    else:
+        mp.set_start_method('spawn')
+
     # Frames are passed in the queue.
     queue = mp.Queue(100)
 

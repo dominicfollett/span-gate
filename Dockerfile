@@ -81,4 +81,4 @@ COPY . ./
 ENV INITSYSTEM on
 
 # main.py will run when container starts up on the device
-CMD modprobe bcm2835-v4l2 && python3 main.py --port 80
+CMD modprobe bcm2835-v4l2 && python3 main.py --port 80 --picamera 1

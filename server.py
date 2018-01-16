@@ -58,9 +58,14 @@ def authorized():
             resp
         )
     # Check the username is allowed.
-    user = github.get('user')
-    print(dir(user))
     session['github_token'] = (resp['access_token'], '')
+    user = github.get('user')
+    if user.data["company"] != '@SPANDigital' and user.data["login"] not in ["dominicfollett"] and user.data["id"] not in [9007502]:
+        return 'Access denied: reason=%s error=%s resp=%s' % (
+            request.args['error'],
+            request.args['error_description'],
+            resp
+        )
     return redirect(url_for('index'))
 
 @github.tokengetter
