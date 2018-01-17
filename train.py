@@ -11,59 +11,6 @@ import argparse
 import time
 import yaml
 
-# Parse the arguments.
-ap = argparse.ArgumentParser()
-ap.add_argument("-n", "--name", type=str, default=None,
-	help="Unique name of 'class' belonging to images.")
-ap.add_argument("-c", "--count", type=int, default=100,
-	help="Number of training examples to take.")
-args = vars(ap.parse_args())
-
-# A name for training must be supplied.
-if args["name"] is None:
-    print("No name supplied.")
-    exit(0)
-
-# Get unique name mappings - which are used as machine learning labels.
-names = None
-try:
-    names = yaml.load(open("./lib/names.yaml", 'r'))
-except yaml.YAMLError as e:
-    print(e)
-    exit(0)
-
-# Load facial classifier.
-face_cascade = cv2.CascadeClassifier('./lib/haarcascade_frontalface_default.xml')
-
-# Initialize the video stream and allow the cammera sensor to warmup.
-video_stream = cv2.VideoCapture(0)
-video_stream.set(3, 640)
-video_stream.set(4, 480)
-video_stream.set(cv2.CAP_PROP_FPS, 90)
-time.sleep(2.0)
-
-# Create the LBPH Face Recognizer.
-recognizer = cv2.face.LBPHFaceRecognizer_create()
-
-# Load previous models.
-try:
-    recognizer.read('./lib/models.yaml')
-except cv2.error as e:
-    # Just warn us if the model is empty.
-    print(e)
-
-# Using the camera get training faces.
-images, labels = get_exemplars(names[args["name"]], args["count"])
-
-# Perform the tranining.
-recognizer.train(images, np.array(labels))
-
-# Save the training data.
-recognizer.save()
-
-# Save the models.
-recognizer.write('./lib/models.yaml')
-
 def get_frame():
     ok, frame = video_stream.read()
     if not ok:
@@ -77,7 +24,6 @@ def get_exemplars(label, count):
 
     exemplar = 0
     images = []
-    labels = [ label for i in count ]
 
     while exemplar < count:
         print("Processed %i exemplars" % exemplar)
@@ -97,4 +43,60 @@ def get_exemplars(label, count):
                 #cv2.waitKey(50)
                 exemplar += 1
     cv2.destroyAllWindows()
-    return images, labels
+    return images, [ label for i in range(count) ]
+
+def handleErr(err):
+    print(err)
+    exit(0)
+
+# Parse the arguments.
+ap = argparse.ArgumentParser()
+required = ap.add_argument_group('required named arguments')
+required.add_argument("-n", "--name", type=str, required=True,
+	help="Unique name of 'class' belonging to images.")
+ap.add_argument("-c", "--count", type=int, default=100,
+	help="Number of training examples to take.")
+args = vars(ap.parse_args())
+
+# Get unique name mappings - which are used as machine-learning labels.
+LABEL = None
+try:
+    LABEL = yaml.load(open("./lib/ids.yaml", 'r'))[args["name"]]
+except KeyError as e:
+    handleErr("Name does not exist.")
+except yaml.YAMLError as e:
+    handleErr(e)
+
+MODEL = "./lib/{}.yaml".format(args["name"])
+
+# Load facial classifier.
+face_cascade = cv2.CascadeClassifier('./lib/haarcascade_frontalface_default.xml')
+
+# Initialize the video stream and allow the cammera sensor to warmup.
+video_stream = cv2.VideoCapture(0)
+video_stream.set(3, 640)
+video_stream.set(4, 480)
+video_stream.set(cv2.CAP_PROP_FPS, 90)
+time.sleep(2.0)
+
+# Create the LBPH Face Recognizer.
+recognizer = cv2.face.LBPHFaceRecognizer_create()
+
+# Load previous models.
+try:
+    recognizer.read(MODEL)
+except cv2.error as e:
+    # Just warn us if the model is empty. Check if the file exists though!
+    print(e)
+
+# Using the camera get training faces.
+images, labels = get_exemplars(LABEL, args["count"])
+
+# Perform the tranining.
+recognizer.train(images, np.array(labels))
+
+# Save the training data.
+recognizer.save(MODEL)
+
+# Save the models.
+#recognizer.write(MODEL)
