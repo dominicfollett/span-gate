@@ -5,17 +5,18 @@ import face_recognition
 import datetime
 import time
 import yaml
+import os
 
 # TODO load all SPAN faces here.
-obama_image = face_recognition.load_image_file("./pics/obama.jpg")
-obama_face_encoding = face_recognition.face_encodings(obama_image)[0]
+#obama_image = face_recognition.load_image_file("./pics/obama.jpg")
+#obama_face_encoding = face_recognition.face_encodings(obama_image)[0]
 
-dom_image = face_recognition.load_image_file("./pics/dom.jpg")
-dom_face_encoding = face_recognition.face_encodings(dom_image)[0]
+#dom_image = face_recognition.load_image_file("./pics/dom.jpg")
+#dom_face_encoding = face_recognition.face_encodings(dom_image)[0]
 
-names = None
+IDS = None
 try:
-    names = yaml.load(open("./lib/names.yaml", 'r'))
+    IDS = yaml.load(open("./lib/ids.yaml", 'r'))
 except yaml.YAMLError as exec:
     print(exec)
     exit(0)
@@ -31,8 +32,8 @@ video_stream.set(cv2.CAP_PROP_FPS, 50)
 # For face recognition we will the the LBPH Face Recognizer.
 recognizer = cv2.face.LBPHFaceRecognizer_create()
 
-# Load previous models.
-recognizer.read('./lib/models.yaml')
+# Load model.
+recognizer.read('./lib/model.yaml')
 
 class Stream:
 
@@ -66,7 +67,7 @@ class Stream:
                     start = time.clock()
                     #frame = self.process_frame(frame, rgb_frame, face_locations)
                     predicted, conf = recognizer.predict(gray[y: y + h, x: x + w])
-                    name = names[predicted] if conf <= 40.0 else "Unknown"
+                    name = IDS[predicted] if conf <= 40.0 else "Unknown"
                     print("{} is recognized with confidence {}".format(name, conf))
                     print(time.clock() - start)
                     cv2.rectangle(frame, (x, y), (x+w, y+h), (0, 0, 255), 2)
