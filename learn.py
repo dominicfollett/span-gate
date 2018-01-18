@@ -101,24 +101,3 @@ elif args.cmd == 'train':
     # Save the training data.
     recognizer.save('./lib/model.yaml')
     print("Training model completed.")
-"""
-
-MODEL = "./lib/models/{}.yaml".format(args["name"])
-
-
-
-# Load previous models.
-try:
-    recognizer.read(MODEL)
-except cv2.error as e:
-    # Just warn us if the model is empty. Check if the file exists though!
-    print(e)
-
-# Using the camera get training faces.
-images, labels = get_exemplars(LABEL, args["count"])
-
-
-# Save the models.
-#recognizer.write(MODEL)
-
-"""
