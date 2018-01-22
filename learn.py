@@ -10,6 +10,7 @@ import time
 import argparse
 import time
 import yaml
+import pathlib
 
 class Capture:
 
@@ -52,7 +53,8 @@ class Capture:
             if len(faces) is 1:
                 for (x, y, w, h) in faces:
                     image = gray[y: y + h, x: x + w]
-                    np.save("./lib/images/{}_{}_label_{}.npy".format(name,
+                    pathlib.Path("./lib/images/{}".format(name)).mkdir(parents=True, exist_ok=True) 
+                    np.save("./lib/images/{}/{}_{}.npy".format(name,
                         exemplar, label), image)
                     # Uncomment to watch facial capture.
                     cv2.imshow("Adding faces to traning set...", gray[y: y + h, x: x + w])
