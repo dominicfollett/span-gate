@@ -71,7 +71,8 @@ RUN git clone https://github.com/torch/distro.git ~/torch --recursive \
     && bash install-deps \
     && ./install.sh \
     && cd / \
-    && source ~/.bashrc
+
+RUN /bin/bash -c "source ~/.bashrc"
 
 # Install Torch dependencies
 RUN for NAME in dpnn nn optim optnet csvigo cutorch cunn fblualib torchx tds; do luarocks install $NAME; done

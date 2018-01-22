@@ -90,18 +90,21 @@ if args.cmd == 'capture':
     Capture().process(args.count, args.name)
     print("Image capture completed.")
 elif args.cmd == 'train':
-    labels = []
-    images = []
-    # Load all images and labels.
-    for f in os.listdir(DIR):
-        file = os.path.join(DIR,f)
-        if os.path.isfile(file):
-            images.append(np.load(os.path.join(DIR,f)))
-            labels.append(int(f.strip(".npy").split("_")[3]))
-    # Create the LBPH Face Recognizer.
-    recognizer = cv2.face.LBPHFaceRecognizer_create()
-    # Perform the tranining.
-    recognizer.train(images, np.array(labels))
-    # Save the training data.
-    recognizer.save('./lib/model.yaml')
-    print("Training model completed.")
+    if args.algorithm == 'LBPH':
+        labels = []
+        images = []
+        # Load all images and labels.
+        for f in os.listdir(DIR):
+            file = os.path.join(DIR,f)
+            if os.path.isfile(file):
+                images.append(np.load(os.path.join(DIR,f)))
+                labels.append(int(f.strip(".npy").split("_")[3]))
+        # Create the LBPH Face Recognizer.
+        recognizer = cv2.face.LBPHFaceRecognizer_create()
+        # Perform the tranining.
+        recognizer.train(images, np.array(labels))
+        # Save the training data.
+        recognizer.save('./lib/model.yaml')
+        print("Training model completed.")
+    if args.algorithm == 'OpenFace':
+        pass
