@@ -5,3 +5,7 @@ Flask-OAuthlib
 imutils>=0.4.5
 face_recognition
 pyyaml
+pandas
+scipy
+scikit-learn
+scikit-image

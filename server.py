@@ -11,6 +11,9 @@ if CLIENT_ID is None or CLIENT_SECRET is None:
     print("Exiting: Oauth client ID and secret is not set in the environment...")
     exit(0)
 
+ALLOWED = ["dominicfollett"]
+ORG = '@SPANDigital'
+
 app = Flask(__name__)
 app.debug = True
 app.secret_key = 'development-secret-span-rocks'
@@ -46,31 +49,34 @@ def login():
 @app.route('/logout')
 def logout():
     session.pop('github_token', None)
-    return redirect(url_for('index'))
+    return render_template('loggedout.html')
 
 @app.route('/login/authorized')
 def authorized():
     resp = github.authorized_response()
+
     if resp is None or resp.get('access_token') is None:
-        return 'Access denied: reason=%s error=%s resp=%s' % (
-            request.args['error'],
-            request.args['error_description'],
-            resp
-        )
+        return access_denied(request)
+
     # Check the username is allowed.
     session['github_token'] = (resp['access_token'], '')
     user = github.get('user')
-    if user.data["company"] != '@SPANDigital' and user.data["login"] not in ["dominicfollett"] and user.data["id"] not in [9007502]:
-        return 'Access denied: reason=%s error=%s resp=%s' % (
-            request.args['error'],
-            request.args['error_description'],
-            resp
-        )
+
+    if user.data["company"] != ORG and user.data["login"] not in ALLOWED:
+        return access_denied(request)
+
     return redirect(url_for('index'))
 
 @github.tokengetter
 def get_github_oauth_token():
     return session.get('github_token')
+
+def access_denied(request):
+    return 'Access denied: reason=%s error=%s resp=%s' % (
+            request.args['error'],
+            request.args['error_description'],
+            resp
+        )
 
 def gen():
     PROCESS_FRAME = 0
