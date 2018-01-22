@@ -70,12 +70,13 @@ RUN git clone https://github.com/torch/distro.git ~/torch --recursive \
     && cd ~/torch \
     && bash install-deps \
     && ./install.sh \
-    && cd / \
+    && cd /
 
+# Make torch available on the cli.
 RUN /bin/bash -c "source ~/.bashrc"
 
 # Install Torch dependencies
-RUN for NAME in dpnn nn optim optnet csvigo cutorch cunn fblualib torchx tds; do luarocks install $NAME; done
+RUN /bin/bash -c "for NAME in dpnn nn optim optnet csvigo cutorch cunn fblualib torchx tds; do luarocks install $NAME; done"
 
 # Install openface
 RUN git clone https://github.com/cmusatyalab/openface.git \
@@ -83,7 +84,7 @@ RUN git clone https://github.com/cmusatyalab/openface.git \
     && sudo python3 setup.py install \
     && cd ./models \
     && ./get_models.sh \
-    && cd / \
+    && cd /
 
 # Set our working directory
 WORKDIR /usr/src/app
