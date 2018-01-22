@@ -67,7 +67,8 @@ RUN cd /tmp \
 
 # Install Torch
 RUN git clone https://github.com/torch/distro.git ~/torch --recursive \
-    && cd ~/torch; bash install-deps; \
+    && cd ~/torch \
+    && bash install-deps \
     && ./install.sh \
     && cd / \
     && source ~/.bashrc

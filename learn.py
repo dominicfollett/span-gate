@@ -80,6 +80,8 @@ capture_parser.add_argument("-n", "--name", type=str, required=True,
 	help="Unique name of 'class' belonging to images.")
 capture_parser.add_argument("-c", "--count", type=int, default=100,
 	help="Number of training examples to take.")
+train_parser.add_argument('-a', '--algorithm', type=str, required=True,
+    help="LBPH or OpenFace (deep learning).")
 args = parser.parse_args()
 
 DIR = './lib/images/'
