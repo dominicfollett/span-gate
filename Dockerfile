@@ -79,7 +79,7 @@ RUN git clone https://github.com/cmusatyalab/openface.git \
     && cd openface/ \
     && sudo python3 setup.py install \
     && cd ./models \
-    && ./get_models.sh \
+    && /bin/bash -c "./get_models.sh" \
     && cd /
 
 # Set our working directory
