@@ -72,11 +72,7 @@ RUN git clone https://github.com/torch/distro.git ~/torch --recursive \
     && ./install.sh \
     && cd /
 
-RUN . ~/torch/install/bin/torch-activate
-
 RUN for NAME in dpnn nn optim optnet csvigo cutorch cunn fblualib torchx tds; do ~/torch/install/bin/luarocks install $NAME; done
-
-RUN th --help
 
 # Install openface
 RUN git clone https://github.com/cmusatyalab/openface.git \
