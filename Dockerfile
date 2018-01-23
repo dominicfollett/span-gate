@@ -76,7 +76,7 @@ RUN /bin/bash -c "source ~/.bashrc"
 
 RUN . ~/torch/install/bin/torch-activate
 
-RUN /bin/bash -c "for NAME in dpnn nn optim optnet csvigo cutorch cunn fblualib torchx tds; do luarocks install $NAME; done"
+RUN for NAME in dpnn nn optim optnet csvigo cutorch cunn fblualib torchx tds; do luarocks install $NAME; done
 
 # Install openface
 RUN git clone https://github.com/cmusatyalab/openface.git \
