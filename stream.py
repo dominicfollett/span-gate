@@ -6,6 +6,10 @@ import datetime
 import time
 import yaml
 import os
+import sys
+import pickle
+import openface
+from pathlib import Path 
 
 # TODO load all SPAN faces here.
 #obama_image = face_recognition.load_image_file("./pics/obama.jpg")
@@ -34,6 +38,11 @@ recognizer = cv2.face.LBPHFaceRecognizer_create()
 
 # Load model.
 # recognizer.read('./lib/model.yaml')
+
+##
+home = str(Path.home())
+align = openface.AlignDlib("{}/openface/models/dlib/shape_predictor_68_face_landmarks.dat".format(home))
+net = openface.TorchNeuralNet("{}/openface/models/openface/nn4.small2.v1.t7".format(home), imgDim=96, cuda=False)
 
 class Stream:
 
@@ -89,7 +98,20 @@ class Stream:
                     (le, clf) = pickle.load(f, encoding='latin1')
 
         print("\n=== {} ===".format(img))
-        r = getRep(img, False)
+
+        # Align the face:
+        alignedFace = align.align(96, img, None,
+            landmarkIndices=openface.AlignDlib.OUTER_EYES_AND_NOSE)
+        
+        if alignedFace is None:
+            raise Exception("Unable to align image: {}".format(imgPath))
+        if args.verbose:
+            print("Alignment took {} seconds.".format(time.time() - start))
+            print("This bbox is centered at {}, {}".format(bb.center().x, bb.center().y))
+
+        start = time.time()
+        r = net.forward(alignedFace)
+        print("Neural network forward pass took {} seconds.".format(time.time() - start))
 
         rep = r[1].reshape(1, -1)
         bbx = r[0]
