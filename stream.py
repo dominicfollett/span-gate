@@ -6,17 +6,10 @@ import datetime
 import time
 import yaml
 import os
-import sys
 import pickle
 import openface
-from pathlib import Path 
-
-# TODO load all SPAN faces here.
-#obama_image = face_recognition.load_image_file("./pics/obama.jpg")
-#obama_face_encoding = face_recognition.face_encodings(obama_image)[0]
-
-#dom_image = face_recognition.load_image_file("./pics/dom.jpg")
-#dom_face_encoding = face_recognition.face_encodings(dom_image)[0]
+from pathlib import Path
+#from sklearn.mixture import GMM
 
 IDS = None
 try:
@@ -28,6 +21,7 @@ except yaml.YAMLError as exec:
 # Load classifiers
 face_cascade = cv2.CascadeClassifier('./lib/haarcascade_frontalface_default.xml')
 video_stream = cv2.VideoCapture(0)
+
 # Initialize the video stream and allow the cammera sensor to warmup.
 video_stream.set(3, 640)
 video_stream.set(4, 480)
@@ -39,19 +33,16 @@ recognizer = cv2.face.LBPHFaceRecognizer_create()
 # Load model.
 # recognizer.read('./lib/model.yaml')
 
-##
 home = str(Path.home())
+
 align = openface.AlignDlib("{}/openface/models/dlib/shape_predictor_68_face_landmarks.dat".format(home))
 net = openface.TorchNeuralNet("{}/openface/models/openface/nn4.small2.v1.t7".format(home), imgDim=96, cuda=False)
 
-##
 le = None
 clf = None
+
 with open('./lib/generated-embeddings/classifier.pkl', 'rb') as f:
-    if sys.version_info[0] < 3:
-            (le, clf) = pickle.load(f)
-    else:
-            (le, clf) = pickle.load(f, encoding='latin1')
+        (le, clf) = pickle.load(f, encoding='latin1')
 
 class Stream:
 
@@ -101,7 +92,7 @@ class Stream:
 
     def infer(self, img, verbose=False):
         #print("\n=== {} ===".format(img))
-
+        """
         start = time.time()
 
         # Align the face:
@@ -135,10 +126,8 @@ class Stream:
         else:
             # https://github.com/cmusatyalab/openface/issues/274
             print("Predict {} with {:.2f} confidence.".format(person.decode('utf-8'), confidence))
-        if isinstance(clf, GMM):
-            dist = np.linalg.norm(rep - clf.means_[maxI])
-            print("  + Distance from the mean: {}".format(dist))
         return person
+        """
 
     def jpeg_byte_array(self, frame):
         ret, jpeg = cv2.imencode('.jpg', frame)
