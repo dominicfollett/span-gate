@@ -44,6 +44,15 @@ home = str(Path.home())
 align = openface.AlignDlib("{}/openface/models/dlib/shape_predictor_68_face_landmarks.dat".format(home))
 net = openface.TorchNeuralNet("{}/openface/models/openface/nn4.small2.v1.t7".format(home), imgDim=96, cuda=False)
 
+##
+le = None
+clf = None
+with open('./lib/generated-embeddings/classifier.pkl', 'rb') as f:
+    if sys.version_info[0] < 3:
+            (le, clf) = pickle.load(f)
+    else:
+            (le, clf) = pickle.load(f, encoding='latin1')
+
 class Stream:
 
     def __init__(self):
@@ -74,7 +83,7 @@ class Stream:
 
                 if PROCESS_FRAME % 2 == 0:
                     #start = time.clock()
-                    self.infer(gray[y: y + h, x: x + w])
+                    predicted =  self.infer(gray[y: y + h, x: x + w], True)
                     #frame = self.process_frame(frame, rgb_frame, face_locations)
                     #predicted, conf = recognizer.predict(gray[y: y + h, x: x + w])
                     #name = IDS[predicted] if conf <= 40.0 else "Unknown"
@@ -91,40 +100,38 @@ class Stream:
             queue.put(frame)
 
     def infer(self, img, verbose=False):
-        with open('./lib/generated-embeddings/classifier.pkl', 'rb') as f:
-            if sys.version_info[0] < 3:
-                    (le, clf) = pickle.load(f)
-            else:
-                    (le, clf) = pickle.load(f, encoding='latin1')
+        #print("\n=== {} ===".format(img))
 
-        print("\n=== {} ===".format(img))
+        start = time.time()
 
         # Align the face:
         alignedFace = align.align(96, img, None,
             landmarkIndices=openface.AlignDlib.OUTER_EYES_AND_NOSE)
         
         if alignedFace is None:
-            raise Exception("Unable to align image: {}".format(imgPath))
-        if args.verbose:
+            print("Unable to align image.")
+            return None
+        if verbose:
             print("Alignment took {} seconds.".format(time.time() - start))
-            print("This bbox is centered at {}, {}".format(bb.center().x, bb.center().y))
 
         start = time.time()
         r = net.forward(alignedFace)
         print("Neural network forward pass took {} seconds.".format(time.time() - start))
 
-        rep = r[1].reshape(1, -1)
-        bbx = r[0]
+        # TODO check this
+        rep = r.reshape(1, -1)
+
         start = time.time()
+        # Predict who is being seen.
         predictions = clf.predict_proba(rep).ravel()
+
+        # Get person.
         maxI = np.argmax(predictions)
         person = le.inverse_transform(maxI)
         confidence = predictions[maxI]
+
         if verbose:
             print("Prediction took {} seconds.".format(time.time() - start))
-        if multiple:
-            print("Predict {} @ x={} with {:.2f} confidence.".format(person.decode('utf-8'), bbx,
-                                                                    confidence))
         else:
             # https://github.com/cmusatyalab/openface/issues/274
             print("Predict {} with {:.2f} confidence.".format(person.decode('utf-8'), confidence))
