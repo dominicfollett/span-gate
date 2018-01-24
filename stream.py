@@ -33,7 +33,7 @@ video_stream.set(cv2.CAP_PROP_FPS, 50)
 recognizer = cv2.face.LBPHFaceRecognizer_create()
 
 # Load model.
-recognizer.read('./lib/model.yaml')
+# recognizer.read('./lib/model.yaml')
 
 class Stream:
 
@@ -64,21 +64,52 @@ class Stream:
                 #cv2.rectangle(frame,(x,y),(x+w,y+h),(255,0,0),2)
 
                 if PROCESS_FRAME % 2 == 0:
-                    start = time.clock()
+                    #start = time.clock()
+                    self.infer(gray[y: y + h, x: x + w])
                     #frame = self.process_frame(frame, rgb_frame, face_locations)
-                    predicted, conf = recognizer.predict(gray[y: y + h, x: x + w])
-                    name = IDS[predicted] if conf <= 40.0 else "Unknown"
-                    print("{} is recognized with confidence {}".format(name, conf))
-                    print(time.clock() - start)
-                    cv2.rectangle(frame, (x, y), (x+w, y+h), (0, 0, 255), 2)
+                    #predicted, conf = recognizer.predict(gray[y: y + h, x: x + w])
+                    #name = IDS[predicted] if conf <= 40.0 else "Unknown"
+                    #print("{} is recognized with confidence {}".format(name, conf))
+                    #print(time.clock() - start)
+                    #cv2.rectangle(frame, (x, y), (x+w, y+h), (0, 0, 255), 2)
                     # Draw a label with a name below the face.
-                    cv2.rectangle(frame, (x, y+h - 35), (x+w, y+h), (0, 0, 255), cv2.FILLED)
-                    font = cv2.FONT_HERSHEY_DUPLEX
-                    cv2.putText(frame, name, (x + 6, y+h - 6), font, 1.0, (255, 255, 255), 1)
+                    #cv2.rectangle(frame, (x, y+h - 35), (x+w, y+h), (0, 0, 255), cv2.FILLED)
+                    #font = cv2.FONT_HERSHEY_DUPLEX
+                    #cv2.putText(frame, name, (x + 6, y+h - 6), font, 1.0, (255, 255, 255), 1)
             PROCESS_FRAME = PROCESS_FRAME % 90 + 1
 
             frame = self.jpeg_byte_array(self.affix_timestamp(frame))
             queue.put(frame)
+
+    def infer(self, img, verbose=False):
+        with open('./lib/generated-embeddings/classifier.pkl', 'rb') as f:
+            if sys.version_info[0] < 3:
+                    (le, clf) = pickle.load(f)
+            else:
+                    (le, clf) = pickle.load(f, encoding='latin1')
+
+        print("\n=== {} ===".format(img))
+        r = getRep(img, False)
+
+        rep = r[1].reshape(1, -1)
+        bbx = r[0]
+        start = time.time()
+        predictions = clf.predict_proba(rep).ravel()
+        maxI = np.argmax(predictions)
+        person = le.inverse_transform(maxI)
+        confidence = predictions[maxI]
+        if verbose:
+            print("Prediction took {} seconds.".format(time.time() - start))
+        if multiple:
+            print("Predict {} @ x={} with {:.2f} confidence.".format(person.decode('utf-8'), bbx,
+                                                                    confidence))
+        else:
+            # https://github.com/cmusatyalab/openface/issues/274
+            print("Predict {} with {:.2f} confidence.".format(person.decode('utf-8'), confidence))
+        if isinstance(clf, GMM):
+            dist = np.linalg.norm(rep - clf.means_[maxI])
+            print("  + Distance from the mean: {}".format(dist))
+        return person
 
     def jpeg_byte_array(self, frame):
         ret, jpeg = cv2.imencode('.jpg', frame)

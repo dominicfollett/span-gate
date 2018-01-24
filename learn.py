@@ -10,7 +10,11 @@ import time
 import argparse
 import time
 import yaml
-import pathlib
+from pathlib import Path
+from subprocess import call
+
+
+OPENFACE_PATH = '~/openface'
 
 class Capture:
 
@@ -53,9 +57,10 @@ class Capture:
             if len(faces) is 1:
                 for (x, y, w, h) in faces:
                     image = gray[y: y + h, x: x + w]
-                    pathlib.Path("./lib/images/{}".format(name)).mkdir(parents=True, exist_ok=True) 
-                    np.save("./lib/images/{}/{}_{}.npy".format(name,
-                        exemplar, label), image)
+                    Path("./lib/images/{}".format(name)).mkdir(parents=True, exist_ok=True)
+                    cv2.imwrite("./lib/images/{}/{}_{}.png".format(name, exemplar, label), image)
+                    #np.save("./lib/images/{}/{}_{}.npy".format(name,
+                    #    exemplar, label), image)
                     # Uncomment to watch facial capture.
                     cv2.imshow("Adding faces to traning set...", gray[y: y + h, x: x + w])
                     cv2.waitKey(50)
@@ -107,4 +112,8 @@ elif args.cmd == 'train':
         recognizer.save('./lib/model.yaml')
         print("Training model completed.")
     if args.algorithm == 'OpenFace':
-        pass
+        # Perform pose detection and alignment
+        home = str(Path.home())
+        call(["python3", "{}/openface/util/align-dlib.py".format(home), "./lib/images", "align", "outerEyesAndNose", "./lib/aligned-images", "--size", "96"])
+        call(["{}/openface/batch-represent/main.lua".format(home), "-outDir", "./lib/generated-embeddings", "-data", "./lib/aligned-images"])
+        call(["python3", "./classifier.py", "--dlibFacePredictor", "{}/openface/models/dlib/shape_predictor_68_face_landmarks.dat".format(home), "train", "./lib/generated-embeddings"])
