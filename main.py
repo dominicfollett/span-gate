@@ -1,9 +1,10 @@
 #!/usr/bin/env python
 
+import multiprocessing as mp
+
 from stream import Stream
 from server import run
 
-import multiprocessing as mp
 import argparse
 
 # Construct the argument parser and parse the arguments.
@@ -22,10 +23,13 @@ if args["debug"] and args["picamera"]:
 
 if __name__ == '__main__':
 
-    if args["picamera"]:
-        mp.set_start_method('fork')
-    else:
-        mp.set_start_method('spawn')
+    try:
+        if args["picamera"]:
+            mp.set_start_method('fork')
+        else:
+            mp.set_start_method('spawn')
+    except RuntimeError:
+        print("Could not change start method.")
 
     # Frames are passed in the queue.
     queue = mp.Queue(100)

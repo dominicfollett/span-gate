@@ -9,3 +9,4 @@ pandas
 scipy
 scikit-learn
 scikit-image
+zerorpc

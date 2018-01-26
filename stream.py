@@ -1,15 +1,11 @@
 #!/usr/bin/env python
 
 import cv2
-import face_recognition
 import datetime
 import time
 import yaml
 import os
-import pickle
-import openface
-from pathlib import Path
-#from sklearn.mixture import GMM
+import zerorpc
 
 IDS = None
 try:
@@ -27,27 +23,26 @@ video_stream.set(3, 640)
 video_stream.set(4, 480)
 video_stream.set(cv2.CAP_PROP_FPS, 50)
 
-# For face recognition we will the the LBPH Face Recognizer.
-recognizer = cv2.face.LBPHFaceRecognizer_create()
+client = zerorpc.Client()
+client.connect("tcp://127.0.0.1:4242")
 
-# Load model.
-# recognizer.read('./lib/model.yaml')
+from pathlib import Path
+import pickle
+import openface
+import zerorpc
+import numpy as np
 
 home = str(Path.home())
 
+# Open NN and trained classifier.
 align = openface.AlignDlib("{}/openface/models/dlib/shape_predictor_68_face_landmarks.dat".format(home))
 net = openface.TorchNeuralNet("{}/openface/models/openface/nn4.small2.v1.t7".format(home), imgDim=96, cuda=False)
-
-le = None
-clf = None
-
-with open('./lib/generated-embeddings/classifier.pkl', 'rb') as f:
-        (le, clf) = pickle.load(f, encoding='latin1')
+# 
 
 class Stream:
 
     def __init__(self):
-        pass
+        self.le, self.clf = pickle.load(open('./lib/generated-embeddings/classifier.pkl', 'rb'), encoding='latin1')
 
     def run(self, queue):
         PROCESS_FRAME = 1
@@ -74,7 +69,8 @@ class Stream:
 
                 if PROCESS_FRAME % 2 == 0:
                     #start = time.clock()
-                    predicted =  self.infer(gray[y: y + h, x: x + w], True)
+                    predicted =  self.infer(frame[y: y + h, x: x + w], True)
+                    print(predicted)
                     #frame = self.process_frame(frame, rgb_frame, face_locations)
                     #predicted, conf = recognizer.predict(gray[y: y + h, x: x + w])
                     #name = IDS[predicted] if conf <= 40.0 else "Unknown"
@@ -92,7 +88,6 @@ class Stream:
 
     def infer(self, img, verbose=False):
         #print("\n=== {} ===".format(img))
-        """
         start = time.time()
 
         # Align the face:
@@ -114,11 +109,11 @@ class Stream:
 
         start = time.time()
         # Predict who is being seen.
-        predictions = clf.predict_proba(rep).ravel()
+        predictions = self.clf.predict_proba(rep).ravel()
 
         # Get person.
         maxI = np.argmax(predictions)
-        person = le.inverse_transform(maxI)
+        person = self.le.inverse_transform(maxI)
         confidence = predictions[maxI]
 
         if verbose:
@@ -127,7 +122,6 @@ class Stream:
             # https://github.com/cmusatyalab/openface/issues/274
             print("Predict {} with {:.2f} confidence.".format(person.decode('utf-8'), confidence))
         return person
-        """
 
     def jpeg_byte_array(self, frame):
         ret, jpeg = cv2.imencode('.jpg', frame)

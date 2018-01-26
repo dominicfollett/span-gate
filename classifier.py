@@ -41,7 +41,7 @@ from sklearn.discriminant_analysis import LinearDiscriminantAnalysis as LDA
 
 from sklearn.preprocessing import LabelEncoder
 from sklearn.svm import SVC
-from sklearn.grid_search import GridSearchCV
+#from sklearn.grid_search import GridSearchCV
 from sklearn.mixture import GMM
 from sklearn.tree import DecisionTreeClassifier
 from sklearn.naive_bayes import GaussianNB
@@ -50,7 +50,6 @@ fileDir = os.path.dirname(os.path.realpath(__file__))
 modelDir = os.path.join(fileDir, '..', 'models')
 dlibModelDir = os.path.join(modelDir, 'dlib')
 openfaceModelDir = os.path.join(modelDir, 'openface')
-
 
 def getRep(imgPath, multiple=False):
     start = time.time()
@@ -130,7 +129,7 @@ def train(args):
              'gamma': [0.001, 0.0001],
              'kernel': ['rbf']}
         ]
-        clf = GridSearchCV(SVC(C=1, probability=True), param_grid, cv=5)
+        clf = None#GridSearchCV(SVC(C=1, probability=True), param_grid, cv=5)
     elif args.classifier == 'GMM':  # Doesn't work best
         clf = GMM(n_components=nClasses)
 
@@ -171,7 +170,6 @@ def train(args):
     with open(fName, 'wb') as f:
         pickle.dump((le, clf), f)
 
-
 def infer(args, multiple=False):
     with open(args.classifierModel, 'rb') as f:
         if sys.version_info[0] < 3:
@@ -203,7 +201,6 @@ def infer(args, multiple=False):
             if isinstance(clf, GMM):
                 dist = np.linalg.norm(rep - clf.means_[maxI])
                 print("  + Distance from the mean: {}".format(dist))
-
 
 if __name__ == '__main__':
 
@@ -288,6 +285,9 @@ Use `--networkModel` to set a non-standard Torch network model.""")
         print("Loading the dlib and OpenFace models took {} seconds.".format(
             time.time() - start))
         start = time.time()
+
+    import multiprocessing as mp
+    print(mp.get_start_method())
 
     if args.mode == 'train':
         train(args)
