@@ -69,18 +69,18 @@ class Stream:
 
                 if PROCESS_FRAME % 2 == 0:
                     #start = time.clock()
-                    predicted =  self.infer(frame[y: y + h, x: x + w], True)
-                    print(predicted)
+                    predicted =  self.infer(frame[y: y + h, x: x + w], False)
                     #frame = self.process_frame(frame, rgb_frame, face_locations)
                     #predicted, conf = recognizer.predict(gray[y: y + h, x: x + w])
                     #name = IDS[predicted] if conf <= 40.0 else "Unknown"
                     #print("{} is recognized with confidence {}".format(name, conf))
                     #print(time.clock() - start)
-                    #cv2.rectangle(frame, (x, y), (x+w, y+h), (0, 0, 255), 2)
-                    # Draw a label with a name below the face.
-                    #cv2.rectangle(frame, (x, y+h - 35), (x+w, y+h), (0, 0, 255), cv2.FILLED)
-                    #font = cv2.FONT_HERSHEY_DUPLEX
-                    #cv2.putText(frame, name, (x + 6, y+h - 6), font, 1.0, (255, 255, 255), 1)
+                    if predicted is not "unknown":
+                        cv2.rectangle(frame, (x, y), (x+w, y+h), (0, 0, 255), 2)
+                        # Draw a label with a name below the face.
+                        cv2.rectangle(frame, (x, y+h - 35), (x+w, y+h), (0, 0, 255), cv2.FILLED)
+                        font = cv2.FONT_HERSHEY_DUPLEX
+                        cv2.putText(frame, predicted, (x + 6, y+h - 6), font, 1.0, (255, 255, 255), 1)
             PROCESS_FRAME = PROCESS_FRAME % 90 + 1
 
             frame = self.jpeg_byte_array(self.affix_timestamp(frame))
@@ -96,7 +96,7 @@ class Stream:
         
         if alignedFace is None:
             print("Unable to align image.")
-            return None
+            return "unknown"
         if verbose:
             print("Alignment took {} seconds.".format(time.time() - start))
 
@@ -116,11 +116,14 @@ class Stream:
         person = self.le.inverse_transform(maxI)
         confidence = predictions[maxI]
 
+        if confidence < 0.9:
+            person = "unknown"
+
         if verbose:
             print("Prediction took {} seconds.".format(time.time() - start))
         else:
             # https://github.com/cmusatyalab/openface/issues/274
-            print("Predict {} with {:.2f} confidence.".format(person.decode('utf-8'), confidence))
+            print("Predict {} with {:.2f} confidence.".format(person, confidence))
         return person
 
     def jpeg_byte_array(self, frame):
