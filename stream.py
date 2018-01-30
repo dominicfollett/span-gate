@@ -5,7 +5,12 @@ import datetime
 import time
 import yaml
 import os
+import dlib
+from pathlib import Path
+import pickle
+import openface
 import zerorpc
+import numpy as np
 
 IDS = None
 try:
@@ -23,21 +28,15 @@ video_stream.set(3, 640)
 video_stream.set(4, 480)
 video_stream.set(cv2.CAP_PROP_FPS, 50)
 
-client = zerorpc.Client()
-client.connect("tcp://127.0.0.1:4242")
-
-from pathlib import Path
-import pickle
-import openface
-import zerorpc
-import numpy as np
-
 home = str(Path.home())
 
 # Open NN and trained classifier.
 align = openface.AlignDlib("{}/openface/models/dlib/shape_predictor_68_face_landmarks.dat".format(home))
 net = openface.TorchNeuralNet("{}/openface/models/openface/nn4.small2.v1.t7".format(home), imgDim=96, cuda=False)
-# 
+
+#Create tracker.
+tracker = dlib.correlation_tracker()
+trackingFace = False
 
 class Stream:
 
